@@ -1,0 +1,157 @@
+﻿<ResourceDictionary x:Class="ShiyukiUtils.Styles.ProgressBars"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ControlTemplate x:Key="CustomProgressBar" TargetType="ProgressBar" >
+        <Grid Name="TemplateRoot" SnapsToDevicePixels="True">
+            <Rectangle RadiusX="2" RadiusY="2" Fill="Transparent" />
+            <Border CornerRadius="0,0,0,0" Margin="1,1,1,1">
+                <Border.Background>
+                    <SolidColorBrush Color="Transparent"/>
+                </Border.Background>
+            </Border>
+            <Border BorderThickness="0,0,0,0" BorderBrush="Transparent" Margin="1,1,1,1">
+                <Border.Background>
+                    <SolidColorBrush Color="Transparent"/>
+                </Border.Background>
+            </Border>
+            <Rectangle Name="PART_Track" Margin="1,1,1,1" />
+            <Decorator Name="PART_Indicator" Margin="0" HorizontalAlignment="Left">
+                <Grid Name="Foreground">
+                    <Border Background="White" CornerRadius="0,2,2,0" Name="Indicator" />
+                    <Grid Name="Animation" ClipToBounds="True">
+                    </Grid>
+                    <Grid Name="Overlay">
+                    </Grid>
+                </Grid>
+            </Decorator>
+            <Border BorderThickness="0" CornerRadius="0,0,0,0" BorderBrush="Transparent" />
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+
+                <!-- Rotate the progressbar so the left edge is the bottom edge -->
+                <Setter TargetName="TemplateRoot" Property="LayoutTransform">
+                    <Setter.Value>
+                        <RotateTransform Angle="270" />
+                    </Setter.Value>
+                </Setter>
+
+                <!-- 
+      Fix the render dimensions b/c what was the width is now height and vice-versa. 
+      Note that we have to use {RelativeSource TemplatedParent} b/c {TemplateBinding}
+      can't be used in a setter's value.
+      -->
+                <Setter TargetName="TemplateRoot" Property="Width"
+       Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Height}"
+       />
+                <Setter TargetName="TemplateRoot" Property="Height"
+       Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Width}"
+       />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="Loading" TargetType="ProgressBar" >
+        <Border Name="TemplateRoot" SnapsToDevicePixels="True" Background="{TemplateBinding Background}" CornerRadius="5">
+            <Grid>
+                <Rectangle RadiusX="2" RadiusY="2" Fill="Transparent" />
+                <Border CornerRadius="0,0,0,0" Margin="1,1,1,1">
+                    <Border.Background>
+                        <SolidColorBrush Color="Transparent"/>
+                    </Border.Background>
+                </Border>
+                <Border BorderThickness="0,0,0,0" BorderBrush="Transparent" Margin="1,1,1,1">
+                    <Border.Background>
+                        <SolidColorBrush Color="Transparent"/>
+                    </Border.Background>
+                </Border>
+                <Rectangle Name="PART_Track" Margin="1,1,1,1" />
+                <Decorator Name="PART_Indicator" Margin="0" HorizontalAlignment="Left">
+                    <Grid Name="Foreground">
+                        <Border Background="{TemplateBinding Foreground}" CornerRadius="5" Name="Indicator" />
+                        <Grid Name="Animation" ClipToBounds="True">
+                        </Grid>
+                        <Grid Name="Overlay">
+                        </Grid>
+                    </Grid>
+                </Decorator>
+                <Border BorderThickness="0" CornerRadius="0,0,0,0" BorderBrush="Transparent" />
+            </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+
+                <!-- Rotate the progressbar so the left edge is the bottom edge -->
+                <Setter TargetName="TemplateRoot" Property="LayoutTransform">
+                    <Setter.Value>
+                        <RotateTransform Angle="270" />
+                    </Setter.Value>
+                </Setter>
+
+                <!-- 
+      Fix the render dimensions b/c what was the width is now height and vice-versa. 
+      Note that we have to use {RelativeSource TemplatedParent} b/c {TemplateBinding}
+      can't be used in a setter's value.
+      -->
+                <Setter TargetName="TemplateRoot" Property="Width"
+       Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Height}"
+       />
+                <Setter TargetName="TemplateRoot" Property="Height"
+       Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Width}"
+       />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="Indetermined" TargetType="ProgressBar" >
+        <Border Name="TemplateRoot" SnapsToDevicePixels="True" Background="{TemplateBinding Background}" CornerRadius="5">
+            <Grid>
+                <Rectangle RadiusX="2" RadiusY="2" Fill="Transparent" />
+                <Border CornerRadius="0,0,0,0" Margin="1,1,1,1">
+                    <Border.Background>
+                        <SolidColorBrush Color="Transparent"/>
+                    </Border.Background>
+                </Border>
+                <Border BorderThickness="0,0,0,0" BorderBrush="Transparent" Margin="1,1,1,1">
+                    <Border.Background>
+                        <SolidColorBrush Color="Transparent"/>
+                    </Border.Background>
+                </Border>
+                <Rectangle Name="PART_Track" Margin="1,1,1,1" />
+                <Decorator Name="PART_Indicator" Margin="1,1,1,1" HorizontalAlignment="Left">
+                    <Grid Name="Foreground">
+                        <Rectangle Fill="Transparent" Name="Indicator" />
+                        <Grid Name="Animation" ClipToBounds="True">
+                            <Border Name="PART_GlowRect"  Margin="0,0,0,0" CornerRadius="5" HorizontalAlignment="Left" Background="{TemplateBinding Foreground}"/>
+                        </Grid>
+                        <Grid Name="Overlay">
+                        </Grid>
+                    </Grid>
+                </Decorator>
+            </Grid>
+        </Border>
+        <ControlTemplate.Triggers>
+            <Trigger Property="Orientation" Value="Vertical">
+
+                <!-- Rotate the progressbar so the left edge is the bottom edge -->
+                <Setter TargetName="TemplateRoot" Property="LayoutTransform">
+                    <Setter.Value>
+                        <RotateTransform Angle="270" />
+                    </Setter.Value>
+                </Setter>
+
+                <!-- 
+      Fix the render dimensions b/c what was the width is now height and vice-versa. 
+      Note that we have to use {RelativeSource TemplatedParent} b/c {TemplateBinding}
+      can't be used in a setter's value.
+      -->
+                <Setter TargetName="TemplateRoot" Property="Width"
+       Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Height}"
+       />
+                <Setter TargetName="TemplateRoot" Property="Height"
+       Value="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=Width}"
+       />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+</ResourceDictionary>

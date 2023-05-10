@@ -1,0 +1,159 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using WindowsInput;
+using WindowsInput.Native;
+
+namespace TouchTransporter
+{
+    public static class TCP
+    {
+        public static TcpClient tcp;
+        public static TcpListener tcps;
+        static NetworkStream net;
+        static byte[] read;
+        static Stopwatch ms = Stopwatch.StartNew();
+        static InputSimulator inp = new InputSimulator();
+
+        public async static void enableTCP(MainWindow main)
+        {
+            try
+            {
+                tcps = new TcpListener(IPAddress.Any, 30921);
+                tcps.Start();
+                tcp = await tcps.AcceptTcpClientAsync();
+                //tcp = new TcpClient();
+                //tcp.Connect("127.0.0.1", 30921);
+                AsyncCallback callback = null;
+                net = tcp.GetStream();
+                read = new byte[tcp.ReceiveBufferSize];
+                int isc = 0;
+                // REPEAT FLUX
+                callback = ar =>
+                {
+                    try
+                    {
+                        int bytesRead = net.EndRead(ar);
+                        string str = Encoding.ASCII.GetString(read, 0, bytesRead);
+                        main.Dispatcher.Invoke(() =>
+                        {
+                            if (main.loaded) Infos.addLog(str);
+                            if (str == "") main.waitState(true);
+                            if (str != "" && !str.Contains("Max") && str.Contains(";")) main.debug.Content = "Debug info : " + ms.ElapsedMilliseconds + " ms";
+                        });
+                        if (str != "")
+                        {
+                            main.Dispatcher.Invoke(() => isc = main.moni.SelectedIndex);
+                            if (str != "" && !str.Contains("Max") && str.Contains(";"))
+                            {
+                                //move cursor
+                                //fix issue cursor at bottom
+                                string[] rstr = str.Split(new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries);
+                                //
+                                string[] s = rstr[0].Split(new string[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                                string[] info = s[0].Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                                int sx = System.Windows.Forms.Screen.AllScreens[isc].Bounds.Width;
+                                int sy = System.Windows.Forms.Screen.AllScreens[isc].Bounds.Height;
+                                CurPos.currentXPos = int.Parse(info[0]);
+                                CurPos.nx = CurPos.currentXPos / CurPos.maxW * sx;
+                                CurPos.currentYPos = int.Parse(info[1]);
+                                CurPos.ny = CurPos.currentYPos / CurPos.maxH * sy;
+                                //
+                                int x = System.Windows.Forms.Screen.AllScreens[isc].Bounds.X;
+                                int y = System.Windows.Forms.Screen.AllScreens[isc].Bounds.Y;
+                                System.Windows.Forms.Cursor.Position = new System.Drawing.Point(x + Convert.ToInt32(CurPos.nx), y + Convert.ToInt32(CurPos.ny));
+                            }
+                            if (str.Contains("Max"))
+                            {
+                                //get max screen grid layout phone
+                                string[] rstr = str.Replace("Max:", "").Split(new string[] { "|" }, StringSplitOptions.RemoveEmptyEntries);
+                                string[] info = rstr[0].Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                                CurPos.maxW = int.Parse(info[0]);
+                                CurPos.maxH = int.Parse(info[1]);
+                            }
+                            if (str.Contains("mouse_click"))
+                            {
+                                MouseOperations.MouseEvent(MouseOperations.MouseEventFlags.LeftDown);
+                            }
+                            if (str.Contains("mouse_up"))
+                            {
+                                MouseOperations.MouseEvent(MouseOperations.MouseEventFlags.LeftUp);
+                            }
+                            if (str.Contains("key-"))
+                            {
+                                //gerer keys
+                                main.Dispatcher.Invoke(() =>
+                                {
+                                    string[] id = str.Split(new string[] { "-" }, StringSplitOptions.RemoveEmptyEntries);
+                                    if (!MainWindow.isSetKey)
+                                    {
+                                        //down
+                                        if (str.Contains("-kdown"))
+                                        {
+                                            string set = Infos.sf.getStringSetting("key_" + id[1]);
+                                            //if have modifier keys
+                                            if (set.Contains(";"))
+                                            {
+                                                List<VirtualKeyCode> modi = new List<VirtualKeyCode>();
+                                                List<VirtualKeyCode> nmo = new List<VirtualKeyCode>();
+                                                foreach (string key in Infos.sf.getStringListSetting("key_" + id[1]))
+                                                {
+                                                    VirtualKeyCode vc = KeyManager.getKeyByString(key);
+                                                    if (KeyManager.isKeyModifier(key)) modi.Add(vc);
+                                                    else nmo.Add(vc);
+                                                }
+                                                inp.Keyboard.ModifiedKeyStroke(modi, nmo);
+                                            }
+                                            else
+                                            {
+                                                //... or not
+                                                foreach (string key in Infos.sf.getStringListSetting("key_" + id[1]))
+                                                {
+                                                    inp.Keyboard.KeyDown(KeyManager.getKeyByString(key));
+                                                }
+                                            }
+                                        }
+                                        //key up
+                                        if (str.Contains("-kup"))
+                                        {
+                                            foreach (string key in Infos.sf.getStringListSetting("key_" + id[1]))
+                                            {
+                                                inp.Keyboard.KeyUp(KeyManager.getKeyByString(key));
+                                            }
+                                        }
+                                    }
+                                    else main.setKeyId = int.Parse(id[1]);
+                                });
+                            }
+                        }
+                        //Repeat
+                        if (str != "" && !str.Contains("Max") && str.Contains(";")) ms = Stopwatch.StartNew();
+                        if (!main.loaded) return;
+                        net.BeginRead(read, 0, tcp.ReceiveBufferSize, callback, null);
+                    }
+                    catch (Exception ee)
+                    {
+                        main.Dispatcher.Invoke(() =>
+                        {
+                            Infos.addLog("Error : " + ee.Message + "\nStacktrace :\n" + ee.StackTrace);
+                            main.loaded = false;
+                        });
+                    }
+                };
+                //Begin read
+                net.BeginRead(read, 0, tcp.ReceiveBufferSize, callback, null);
+                Infos._main.loaded = true;
+            }
+            catch (Exception ee)
+            {
+                Infos.addLog("Error : " + ee.Message + "\nStacktrace :\n" + ee.StackTrace);
+            }
+        }
+    }
+}
