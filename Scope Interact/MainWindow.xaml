@@ -91,5 +91,6 @@
             </Grid>
         </Border>
         <Label x:Name="welc" HorizontalAlignment="Right" VerticalAlignment="Bottom" Content="version&#xA;By Shiyukine - Aketsuky" Foreground="White" Margin="0" FlowDirection="RightToLeft"/>
+        <Label x:Name="ip_text" Content="My IP: Loading..." HorizontalAlignment="Left" Margin="10,102,0,0" VerticalAlignment="Top" Foreground="White"/>
     </Grid>
 </Window>

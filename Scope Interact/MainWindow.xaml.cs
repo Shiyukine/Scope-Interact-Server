@@ -187,6 +187,14 @@ namespace ScopeInteract
                 connectLocalTCP();
                 windowLoaded = true;
                 if(!Infos.sf.getBoolSetting("Logs")) logs.Text = "";
+                string localIP;
+                using (Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0))
+                {
+                    socket.Connect("8.8.8.8", 65530);
+                    IPEndPoint endPoint = socket.LocalEndPoint as IPEndPoint;
+                    localIP = endPoint.Address.ToString();
+                }
+                ip_text.Content = "My IP: " + localIP;
             }
             catch(Exception ex)
             {

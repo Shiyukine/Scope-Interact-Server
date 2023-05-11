@@ -67,7 +67,8 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>tempkey.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>ScopeInteract.App</StartupObject>
@@ -221,7 +222,6 @@
     <Resource Include="Resources\quicksand-variablefont_wght.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
-    <None Include="tempkey.snk" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
