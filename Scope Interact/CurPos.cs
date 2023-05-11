@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Forms;
 
 namespace ScopeInteract
 {
@@ -23,5 +24,6 @@ namespace ScopeInteract
         public static bool isHovering = false;
         public static bool autoMC = true;
         public static bool isClicking = false;
+        public static string cur;
     }
 }

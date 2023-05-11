@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -199,16 +200,47 @@ namespace ScopeInteract
             }
             if(str.Contains("key-2-kdown"))
             {
-                CurPos.nx = MouseOperations.GetCursorPosition().X;
-                CurPos.ny = MouseOperations.GetCursorPosition().Y;
+                double top = 0;
+                double left = 0;
+                foreach (System.Windows.Forms.Screen s in System.Windows.Forms.Screen.AllScreens)
+                {
+                    if (s.Bounds.Y < top && s.Bounds.Y < 0) top = s.Bounds.Y * -1;
+                    if (s.Bounds.X < left && s.Bounds.X < 0) left = s.Bounds.X * -1;
+                }
+                //
+                int monitor = Screen.AllScreens.ToList().IndexOf(Screen.FromPoint(Cursor.Position));
+                double ux = System.Windows.Forms.Screen.AllScreens[monitor].Bounds.X + left;
+                double uy = System.Windows.Forms.Screen.AllScreens[monitor].Bounds.Y + top;
+                Debug.WriteLine("aa " + CurPos.nx + " " + CurPos.ny);
+                CurPos.nx = Cursor.Position.X;
+                CurPos.ny = Cursor.Position.Y;
+                Debug.WriteLine("ab " + CurPos.nx + " " + CurPos.ny);
+                CurPos.cur = (string)Registry.GetValue(@"HKEY_CURRENT_USER\Control Panel\Cursors\", "Arrow", "");
+                Debug.WriteLine(CurPos.cur);
+                MouseOperations.ChangeCursor(AppDomain.CurrentDomain.BaseDirectory + @"Green.cur");
+                return;
+            }
+            if(str.Contains("key-2-kup"))
+            {
+                //mandatory
+                Cursor.Position = new System.Drawing.Point((int)CurPos.nx, (int)CurPos.ny);
+                MouseOperations.ChangeCursor(CurPos.cur);
+                return;
             }
             if (str.Contains("key-1-kdown"))
             {
                 CurPos.isClicking = true;
+                return;
+            }
+            if (str.Contains("sensivity"))
+            {
+                CurPos.curSensivity = Infos.strToDouble(str.Replace("sensivity:", ""));
+                return;
             }
             if (str.Contains("key-1-kup"))
             {
                 CurPos.isClicking = false;
+                return;
             }
             if (str.Contains("move"))
             {
@@ -216,9 +248,18 @@ namespace ScopeInteract
                 double velo_x = Infos.strToDouble(info[0]);
                 double velo_y = Infos.strToDouble(info[1]);
                 double velo_z = Infos.strToDouble(info[2]);
-                CurPos.nx += velo_x * 2 * CurPos.curSensivity;
-                CurPos.ny += velo_z * 2 * CurPos.curSensivity;
-                MainWindow.t.updateDigitizer((byte)(CurPos.isClicking ? 33 : 32), (ushort)CurPos.nx, (ushort)CurPos.ny, CurPos.npress, isc);
+                double multiplier = 5;
+                double nx = CurPos.nx - (velo_z * multiplier * CurPos.curSensivity);
+                double ny = CurPos.ny - (velo_x * multiplier * CurPos.curSensivity);
+                double maxWidth = isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Width : SystemParameters.VirtualScreenWidth;
+                double maxHeight = isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Height : SystemParameters.VirtualScreenHeight;
+                if (nx >= 0 && ny >= 0 && nx <= maxWidth && ny <= maxHeight)
+                {
+                    CurPos.nx -= velo_z * multiplier * CurPos.curSensivity;
+                    CurPos.ny -= velo_x * multiplier * CurPos.curSensivity;
+                    MainWindow.t.updateDigitizer((byte)(CurPos.isClicking ? 33 : 32), (ushort)CurPos.nx, (ushort)CurPos.ny, 8, isc);
+                }
+                return;
             }
             if (str.Contains("mouse_"))
             {
@@ -270,17 +311,14 @@ namespace ScopeInteract
                     return;
                 }
             }
-            if (str.Contains("Max"))
+            if (str.Contains("ready"))
             {
                 //get max screen grid layout phone
-                string[] info = str.Replace("Max:", "").Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
-                CurPos.maxW = Infos.strToDouble(info[0]);
-                CurPos.maxH = Infos.strToDouble(info[1]);
-                CurPos.autoMC = bool.Parse(info[4]);
-                CurPos.isMouse = info[2] == "mouse";
+                string[] info = str.Replace("ready:", "").Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                CurPos.curSensivity = Infos.strToDouble(info[1]);
                 Infos._main.Dispatcher.Invoke(() =>
                 {
-                    if (int.Parse(info[3]) < Update.minVerCode)
+                    if (int.Parse(info[0]) < Update.minVerCode)
                     {
                         Infos._main.loaded = false;
                         Infos.newErr(null, "Version of this client is out-dated. Please update client.");

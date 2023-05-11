@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -77,5 +78,21 @@ namespace ScopeInteract
             MousePoint mp = GetCursorPosition();
             mouse_event((int)MouseEventFlags.MOUSEEVENTF_WHEEL, mp.X, mp.Y, delta, 0);
         }
+
+        [System.Runtime.InteropServices.DllImport("user32.dll")]
+        public static extern IntPtr LoadCursorFromFile(string fileName);
+
+        public static void ChangeCursor(string curFile)
+        {
+            Registry.SetValue(@"HKEY_CURRENT_USER\Control Panel\Cursors\", "Arrow", curFile);
+            SystemParametersInfo(SPI_SETCURSORS, 0, curFile, SPIF_UPDATEINIFILE | SPIF_SENDCHANGE);
+        }
+
+        const int SPI_SETCURSORS = 0x0057;
+        const int SPIF_UPDATEINIFILE = 0x01;
+        const int SPIF_SENDCHANGE = 0x02;
+
+        [DllImport("user32.dll", EntryPoint = "SystemParametersInfo")]
+        public static extern bool SystemParametersInfo(uint uiAction, uint uiParam, string pvParam, uint fWinIni);
     }
 }
