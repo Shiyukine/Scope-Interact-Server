@@ -149,7 +149,6 @@ namespace ScopeInteract
                 spaceKey = inp.InputDeviceState.IsKeyDown(VirtualKeyCode.SPACE);
                 if (!CurPos.isMouse && !spaceKey)
                 {
-                    CurPos.curPressure = Infos.strToDouble(info[2]);
                     double ax = CurPos.currentXPos / CurPos.maxW * (isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Width : SystemParameters.VirtualScreenWidth);
                     double ay = CurPos.currentYPos / CurPos.maxH * (isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Height : SystemParameters.VirtualScreenHeight);
                     //REGARDER SEULEMENT SI LA SOURIS DEPASSE UN ECRAN avec isc = -1
@@ -169,8 +168,8 @@ namespace ScopeInteract
                     if (info.Length == 4 && info[3] == "hover") statusMask = 32;
                     CurPos.nx = ax;
                     CurPos.ny = ay;
-                    if (CurPos.autoMC) CurPos.npress = (byte)(CurPos.curPressure * 8);
-                    else statusMask = 32;
+                    //if (CurPos.autoMC) CurPos.npress = (byte)(CurPos.curPressure * 8);
+                    //else statusMask = 32;
                     MainWindow.t.updateDigitizer((byte)statusMask, (ushort)CurPos.nx, (ushort)CurPos.ny, CurPos.npress, isc);
                 }
                 else
@@ -197,6 +196,29 @@ namespace ScopeInteract
                     MouseOperations.SetCursorPosition(Convert.ToInt32(CurPos.nx), Convert.ToInt32(CurPos.ny));
                 }
                 return;
+            }
+            if(str.Contains("key-2-kdown"))
+            {
+                CurPos.nx = MouseOperations.GetCursorPosition().X;
+                CurPos.ny = MouseOperations.GetCursorPosition().Y;
+            }
+            if (str.Contains("key-1-kdown"))
+            {
+                CurPos.isClicking = true;
+            }
+            if (str.Contains("key-1-kup"))
+            {
+                CurPos.isClicking = false;
+            }
+            if (str.Contains("move"))
+            {
+                string[] info = str.Replace("move:", "").Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                double velo_x = Infos.strToDouble(info[0]);
+                double velo_y = Infos.strToDouble(info[1]);
+                double velo_z = Infos.strToDouble(info[2]);
+                CurPos.nx += velo_x * 2 * CurPos.curSensivity;
+                CurPos.ny += velo_z * 2 * CurPos.curSensivity;
+                MainWindow.t.updateDigitizer((byte)(CurPos.isClicking ? 33 : 32), (ushort)CurPos.nx, (ushort)CurPos.ny, CurPos.npress, isc);
             }
             if (str.Contains("mouse_"))
             {

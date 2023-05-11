@@ -18,9 +18,10 @@ namespace ScopeInteract
         public static double maxW = 0;
         public static double maxH = 0;
         public static bool isMouse = true;
-        public static double curPressure = -1;
+        public static double curSensivity = 1;
         public static byte npress = 0;
         public static bool isHovering = false;
         public static bool autoMC = true;
+        public static bool isClicking = false;
     }
 }
