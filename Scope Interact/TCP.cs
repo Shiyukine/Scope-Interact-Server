@@ -230,6 +230,7 @@ namespace ScopeInteract
             if (str.Contains("key-1-kdown"))
             {
                 CurPos.isClicking = true;
+                MainWindow.t.updateDigitizer((byte)33, (ushort)CurPos.nx, (ushort)CurPos.ny, 8, isc);
                 return;
             }
             if (str.Contains("sensivity"))
