@@ -214,6 +214,9 @@ namespace ScopeInteract
                 Debug.WriteLine("aa " + CurPos.nx + " " + CurPos.ny);
                 CurPos.nx = Cursor.Position.X;
                 CurPos.ny = Cursor.Position.Y;
+                CurPos.linearVeloX = 0;
+                CurPos.linearVeloY = 0;
+                CurPos.linearVeloZ = 0;
                 Debug.WriteLine("ab " + CurPos.nx + " " + CurPos.ny);
                 CurPos.cur = (string)Registry.GetValue(@"HKEY_CURRENT_USER\Control Panel\Cursors\", "Arrow", "");
                 Debug.WriteLine(CurPos.cur);
@@ -249,7 +252,7 @@ namespace ScopeInteract
                 double velo_x = Infos.strToDouble(info[0]);
                 double velo_y = Infos.strToDouble(info[1]);
                 double velo_z = Infos.strToDouble(info[2]);
-                double multiplier = 5;
+                double multiplier = 2;
                 double nx = CurPos.nx - (velo_z * multiplier * CurPos.curSensivity);
                 double ny = CurPos.ny - (velo_x * multiplier * CurPos.curSensivity);
                 double maxWidth = isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Width : SystemParameters.VirtualScreenWidth;
@@ -260,6 +263,43 @@ namespace ScopeInteract
                     CurPos.ny -= velo_x * multiplier * CurPos.curSensivity;
                     MainWindow.t.updateDigitizer((byte)(CurPos.isClicking ? 33 : 32), (ushort)CurPos.nx, (ushort)CurPos.ny, 8, isc);
                 }
+                return;
+            }
+            if (str.Contains("linear"))
+            {
+                string[] info = str.Replace("linear:", "").Split(new string[] { ";" }, StringSplitOptions.RemoveEmptyEntries);
+                double acc_x = Infos.strToDouble(info[0]);
+                double acc_y = Infos.strToDouble(info[1]);
+                double acc_z = Infos.strToDouble(info[2]);
+                double dT = Infos.strToDouble(info[3]) * Math.Pow(10, -3);
+                /*double a = 0.8;
+                double velo_x = CurPos.linearVeloX * a + (acc_x * dT) * (1 - a);
+                double velo_y = CurPos.linearVeloY * a + (acc_y * dT) * (1 - a);
+                double velo_z = CurPos.linearVeloZ * a + (acc_z * dT) * (1 - a);*/
+                double velo_x = CurPos.linearVeloX + (acc_x * dT);
+                double velo_y = CurPos.linearVeloY + (acc_y * dT);
+                double velo_z = CurPos.linearVeloZ + (acc_z * dT);
+                if (acc_x <= 0.1 && acc_x >= -0.1 && Math.Abs(CurPos.linearVeloX - velo_x) < 0.01) CurPos.linearVeloX = 0;
+                if (acc_y <= 0.1 && acc_y >= -0.1 && Math.Abs(CurPos.linearVeloY - velo_y) < 0.01) CurPos.linearVeloY = 0;
+                if (acc_z <= 0.1 && acc_z >= -0.1 && Math.Abs(CurPos.linearVeloZ - velo_z) < 0.01) CurPos.linearVeloZ = 0;
+                velo_x = CurPos.linearVeloX + (acc_x * dT);
+                velo_y = CurPos.linearVeloY + (acc_y * dT);
+                velo_z = CurPos.linearVeloZ + (acc_z * dT);
+                double multiplier = 2;
+                double nx = CurPos.nx + (velo_x * multiplier * CurPos.curSensivity);
+                double ny = CurPos.ny - (velo_z * multiplier * CurPos.curSensivity);
+                double maxWidth = isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Width : SystemParameters.VirtualScreenWidth;
+                double maxHeight = isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Height : SystemParameters.VirtualScreenHeight;
+                //Infos._main.Dispatcher.Invoke(() => Infos.newErrLog(null, velo_x + "  " + velo_z));
+                if (nx >= 0 && ny >= 0 && nx <= maxWidth && ny <= maxHeight)
+                {
+                    CurPos.nx += velo_x * multiplier * CurPos.curSensivity;
+                    CurPos.ny -= velo_z * multiplier * CurPos.curSensivity;
+                    MainWindow.t.updateDigitizer((byte)(CurPos.isClicking ? 33 : 32), (ushort)CurPos.nx, (ushort)CurPos.ny, 8, isc);
+                }
+                CurPos.linearVeloX = velo_x;
+                CurPos.linearVeloY = velo_y;
+                CurPos.linearVeloZ = velo_z;
                 return;
             }
             if (str.Contains("mouse_"))

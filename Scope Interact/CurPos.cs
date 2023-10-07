@@ -25,5 +25,10 @@ namespace ScopeInteract
         public static bool autoMC = true;
         public static bool isClicking = false;
         public static string cur;
+        public static int isTop = 0;
+        public static int isLeft = 0;
+        public static double linearVeloX = 0;
+        public static double linearVeloY = 0;
+        public static double linearVeloZ = 0;
     }
 }
