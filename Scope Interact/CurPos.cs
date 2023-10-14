@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -30,5 +31,34 @@ namespace ScopeInteract
         public static double linearVeloX = 0;
         public static double linearVeloY = 0;
         public static double linearVeloZ = 0;
+        static double _isMovingX = 0;
+        public static double isMovingX
+        {
+            get
+            {
+                return _isMovingX;
+            }
+            set
+            {
+                //if (_isMovingX != 0 && value == 0) linearVeloX = 0;
+                _isMovingX = value;
+                Debug.WriteLine(value + " x ");
+            }
+        }
+        public static double isMovingY = 0;
+        public static double isMovingZ
+        {
+            get
+            {
+                return _isMovingZ;
+            }
+            set
+            {
+                //if (_isMovingZ != 0 && value == 0) linearVeloZ = 0;
+                _isMovingZ = value;
+                Debug.WriteLine(value + " z ");
+            }
+        }
+        static double _isMovingZ = 0;
     }
 }

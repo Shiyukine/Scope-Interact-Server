@@ -49,6 +49,7 @@ namespace ScopeInteract
             {
                 bloaded = value;
                 RemoveClickEvent(serv_load);
+                if(CurPos.cur != null) MouseOperations.ChangeCursor(CurPos.cur);
                 if (value)
                 {
                     serv_stats.Content = "ON";

@@ -137,6 +137,68 @@ namespace ScopeInteract
             }
         }
 
+        static void changeIsMovingX(double acc_x)
+        {
+            double limit = 0.3;
+            if (CurPos.isMovingX == 1 && acc_x <= 0)
+            {
+                CurPos.isMovingX = -2;
+                return;
+            }
+            if (CurPos.isMovingX == -1 && acc_x >= 0)
+            {
+                CurPos.isMovingX = 2;
+                return;
+            }
+            if (CurPos.isMovingX == 0)
+            {
+                if (acc_x > limit) CurPos.isMovingX = 1;
+                if (acc_x < -limit) CurPos.isMovingX = -1;
+                return;
+            }
+            if (CurPos.isMovingX == 2 && acc_x < limit && acc_x > -limit)
+            {
+                CurPos.isMovingX = 0;
+                return;
+            }
+            if (CurPos.isMovingX == -2 && acc_x < limit && acc_x > -limit)
+            {
+                CurPos.isMovingX = 0;
+                return;
+            }
+        }
+
+        static void changeIsMovingZ(double acc_z)
+        {
+            double limit = 0.3;
+            if (CurPos.isMovingZ == 1 && acc_z <= 0)
+            {
+                CurPos.isMovingZ = -2;
+                return;
+            }
+            if (CurPos.isMovingZ == -1 && acc_z >= 0)
+            {
+                CurPos.isMovingZ = 2;
+                return;
+            }
+            if (CurPos.isMovingZ == 0)
+            {
+                if (acc_z > limit) CurPos.isMovingZ = 1;
+                if (acc_z < -limit) CurPos.isMovingZ = -1;
+                return;
+            }
+            if (CurPos.isMovingZ == 2 && acc_z < limit && acc_z > -limit)
+            {
+                CurPos.isMovingZ = 0;
+                return;
+            }
+            if (CurPos.isMovingZ == -2 && acc_z < limit && acc_z > -limit)
+            {
+                CurPos.isMovingZ = 0;
+                return;
+            }
+        }
+
         private static void fore(string str)
         {
             Infos._main.Dispatcher.Invoke(() => isc = Infos._main.moni.SelectedIndex - 1);
@@ -217,6 +279,9 @@ namespace ScopeInteract
                 CurPos.linearVeloX = 0;
                 CurPos.linearVeloY = 0;
                 CurPos.linearVeloZ = 0;
+                CurPos.isMovingX = 0;
+                CurPos.isMovingY = 0;
+                CurPos.isMovingZ = 0;
                 Debug.WriteLine("ab " + CurPos.nx + " " + CurPos.ny);
                 CurPos.cur = (string)Registry.GetValue(@"HKEY_CURRENT_USER\Control Panel\Cursors\", "Arrow", "");
                 Debug.WriteLine(CurPos.cur);
@@ -257,12 +322,21 @@ namespace ScopeInteract
                 double ny = CurPos.ny - (velo_x * multiplier * CurPos.curSensivity);
                 double maxWidth = isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Width : SystemParameters.VirtualScreenWidth;
                 double maxHeight = isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Height : SystemParameters.VirtualScreenHeight;
+                double move = Math.Sqrt(velo_x * velo_x + velo_y * velo_y + velo_z * velo_z);
                 if (nx >= 0 && ny >= 0 && nx <= maxWidth && ny <= maxHeight)
                 {
                     CurPos.nx -= velo_z * multiplier * CurPos.curSensivity;
                     CurPos.ny -= velo_x * multiplier * CurPos.curSensivity;
-                    MainWindow.t.updateDigitizer((byte)(CurPos.isClicking ? 33 : 32), (ushort)CurPos.nx, (ushort)CurPos.ny, 8, isc);
+                    if (move > 0.3)
+                        MainWindow.t.updateDigitizer((byte)(CurPos.isClicking ? 33 : 32), (ushort)CurPos.nx, (ushort)CurPos.ny, 8, isc);
                 }
+                return;
+            }
+            if (str.Contains("resetLinear"))
+            {
+                CurPos.linearVeloX = 0;
+                CurPos.linearVeloY = 0;
+                CurPos.linearVeloZ = 0;
                 return;
             }
             if (str.Contains("linear"))
@@ -271,35 +345,47 @@ namespace ScopeInteract
                 double acc_x = Infos.strToDouble(info[0]);
                 double acc_y = Infos.strToDouble(info[1]);
                 double acc_z = Infos.strToDouble(info[2]);
+                changeIsMovingX(acc_x);
+                changeIsMovingZ(acc_z);
+                //Debug.WriteLine(CurPos.isMovingZ + " z " + acc_z);
                 double dT = Infos.strToDouble(info[3]) * Math.Pow(10, -3);
                 /*double a = 0.8;
                 double velo_x = CurPos.linearVeloX * a + (acc_x * dT) * (1 - a);
                 double velo_y = CurPos.linearVeloY * a + (acc_y * dT) * (1 - a);
                 double velo_z = CurPos.linearVeloZ * a + (acc_z * dT) * (1 - a);*/
-                double velo_x = CurPos.linearVeloX + (acc_x * dT);
+                /*double velo_x = CurPos.linearVeloX + (acc_x * dT);
                 double velo_y = CurPos.linearVeloY + (acc_y * dT);
-                double velo_z = CurPos.linearVeloZ + (acc_z * dT);
-                if (acc_x <= 0.1 && acc_x >= -0.1 && Math.Abs(CurPos.linearVeloX - velo_x) < 0.01) CurPos.linearVeloX = 0;
-                if (acc_y <= 0.1 && acc_y >= -0.1 && Math.Abs(CurPos.linearVeloY - velo_y) < 0.01) CurPos.linearVeloY = 0;
-                if (acc_z <= 0.1 && acc_z >= -0.1 && Math.Abs(CurPos.linearVeloZ - velo_z) < 0.01) CurPos.linearVeloZ = 0;
+                double velo_z = CurPos.linearVeloZ + (acc_z * dT);*/
+                /*if (CurPos.isMovingX == 0 && Math.Abs(CurPos.linearVeloX - velo_x) < 0.01) CurPos.linearVeloX = 0;
+                if (acc_y <= 0.5 && acc_y >= -0.5 && Math.Abs(CurPos.linearVeloY - velo_y) < 0.01) CurPos.linearVeloY = 0;
+                if (CurPos.isMovingZ == 0 && Math.Abs(CurPos.linearVeloZ - velo_z) < 0.01) CurPos.linearVeloZ = 0;
                 velo_x = CurPos.linearVeloX + (acc_x * dT);
                 velo_y = CurPos.linearVeloY + (acc_y * dT);
-                velo_z = CurPos.linearVeloZ + (acc_z * dT);
-                double multiplier = 2;
-                double nx = CurPos.nx + (velo_x * multiplier * CurPos.curSensivity);
-                double ny = CurPos.ny - (velo_z * multiplier * CurPos.curSensivity);
+                velo_z = CurPos.linearVeloZ + (acc_z * dT);*/
+                double dist_x = CurPos.linearVeloX * dT + 0.5 * (acc_x * Math.Pow(dT, 2));
+                double dist_y = CurPos.linearVeloY * dT + 0.5 * (acc_y * Math.Pow(dT, 2));
+                double dist_z = CurPos.linearVeloZ * dT + 0.5 * (acc_z * Math.Pow(dT, 2));
+                double velo_x = dist_x / dT;
+                double velo_y = dist_y / dT;
+                double velo_z = dist_z / dT;
+                if (CurPos.isMovingX == 0 && acc_x <= 0.3 && acc_x >= -0.3) dist_x = 0;
+                if (acc_y <= 0.5 && acc_y >= -0.5 && Math.Abs(CurPos.linearVeloY - velo_y) < 0.01) CurPos.linearVeloY = 0;
+                if (CurPos.isMovingZ == 0 && acc_z <= 0.3 && acc_z >= -0.3) dist_z = 0;
+                double multiplier = 500;
+                double nx = CurPos.nx + (dist_x * multiplier * CurPos.curSensivity);
+                double ny = CurPos.ny - (dist_z * multiplier * CurPos.curSensivity);
                 double maxWidth = isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Width : SystemParameters.VirtualScreenWidth;
                 double maxHeight = isc != -1 ? System.Windows.Forms.Screen.AllScreens[isc].Bounds.Height : SystemParameters.VirtualScreenHeight;
                 //Infos._main.Dispatcher.Invoke(() => Infos.newErrLog(null, velo_x + "  " + velo_z));
                 if (nx >= 0 && ny >= 0 && nx <= maxWidth && ny <= maxHeight)
                 {
-                    CurPos.nx += velo_x * multiplier * CurPos.curSensivity;
-                    CurPos.ny -= velo_z * multiplier * CurPos.curSensivity;
+                    CurPos.nx += dist_x * multiplier * CurPos.curSensivity;
+                    CurPos.ny -= dist_z * multiplier * CurPos.curSensivity;
                     MainWindow.t.updateDigitizer((byte)(CurPos.isClicking ? 33 : 32), (ushort)CurPos.nx, (ushort)CurPos.ny, 8, isc);
                 }
-                CurPos.linearVeloX = velo_x;
-                CurPos.linearVeloY = velo_y;
-                CurPos.linearVeloZ = velo_z;
+                CurPos.linearVeloX = dist_x / dT;
+                CurPos.linearVeloY = dist_y / dT;
+                CurPos.linearVeloZ = dist_z / dT;
                 return;
             }
             if (str.Contains("mouse_"))
