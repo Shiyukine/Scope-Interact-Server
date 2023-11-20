@@ -325,10 +325,10 @@ namespace ScopeInteract
                 double move = Math.Sqrt(velo_x * velo_x + velo_y * velo_y + velo_z * velo_z);
                 if (nx >= 0 && ny >= 0 && nx <= maxWidth && ny <= maxHeight)
                 {
-                    CurPos.nx -= velo_z * multiplier * CurPos.curSensivity;
+                    /*CurPos.nx -= velo_z * multiplier * CurPos.curSensivity;
                     CurPos.ny -= velo_x * multiplier * CurPos.curSensivity;
                     if (move > 0.1)
-                        MainWindow.t.updateDigitizer((byte)(CurPos.isClicking ? 33 : 32), (ushort)CurPos.nx, (ushort)CurPos.ny, 8, isc);
+                        MainWindow.t.updateDigitizer((byte)(CurPos.isClicking ? 33 : 32), (ushort)CurPos.nx, (ushort)CurPos.ny, 8, isc);*/
                 }
                 return;
             }
