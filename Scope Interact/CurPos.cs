@@ -31,6 +31,9 @@ namespace ScopeInteract
         public static double linearVeloX = 0;
         public static double linearVeloY = 0;
         public static double linearVeloZ = 0;
+        public static double linearDistX = 0;
+        public static double linearDistY = 0;
+        public static double linearDistZ = 0;
         static double _isMovingX = 0;
         public static double isMovingX
         {
@@ -56,7 +59,7 @@ namespace ScopeInteract
             {
                 //if (_isMovingZ != 0 && value == 0) linearVeloZ = 0;
                 _isMovingZ = value;
-                Debug.WriteLine(value + " z ");
+                //Debug.WriteLine(value + " z ");
             }
         }
         static double _isMovingZ = 0;
